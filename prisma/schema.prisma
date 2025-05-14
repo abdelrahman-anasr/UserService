@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  universityId      String   @unique
+  gender            String
+  password          String
+  phoneNumber       String
+  isEmailVerified   Boolean  @default(false)
+  role              Role     @default(student)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime? @updatedAt
+  licenseNumber     String?  @unique
+  licenseURL        String?  
+  @@index([email])
+}
+
+model AccountRequest {
+  id Int @id @default(autoincrement())
+  universityId Int
+  name String
+  email String
+  gender String
+  phoneNumber String
+  password String
+  createdAt DateTime @default(now())
+  status String @default("Pending")
+
+}
+
+model Request {
+  id           String        @id @default(uuid())
+  universityId String
+  status       RequestStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  reviewedAt   DateTime?
+  carModel  String?
+  carModelYear  String?
+  seats         Int?
+  licenseURL   String? 
+  @@index([status])
+}
+
+model Complaint {
+  id Int @id @default(autoincrement())
+  userId Int
+  Subject String
+  Message String
+  createdAt DateTime @default(now())
+}
+
+model AdminResponse {
+  id Int @id @default(autoincrement())
+  userId Int
+  Subject String
+  Message String
+  createdAt DateTime @default(now())
+}
+
+model Car {
+  id           String        @id @default(uuid())
+  DriverId    String
+  carModel  String
+  carModelYear  String
+  seats         Int
+  
+}
+model Approval {
+  id  String        @id @default(uuid())
+  accountCode Int   @unique
+  userId     String
+}
+
+enum Role {
+  admin
+  driver
+  student
+}
+
+enum RequestType {
+  STUDENT
+  DRIVER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
