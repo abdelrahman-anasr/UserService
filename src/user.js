@@ -146,7 +146,7 @@ const shareCarInfo = async (car) => {
 
   type AdminResponse {
     id: Int!
-    userId: Int!
+    complaintId: Int!
     Subject: String!
     Message: String!
     createdAt: String!
@@ -186,6 +186,7 @@ const shareCarInfo = async (car) => {
     users: [User!]!
     user(id: ID!): User
     complaints: [Complaint!]!
+    fetchUnrespondedComplaints: [Complaint]!
     fetchMyDetails: User
     complaint(id: Int!): Complaint
     complaintsByUser(userId: Int!): [Complaint!]!
@@ -194,6 +195,8 @@ const shareCarInfo = async (car) => {
     Miniusers: [Miniusers!]!
     rejectAccountRequest(id: Int!): AccountRequest!
     adminResponses: [AdminResponse]!
+    fetchMyComplaints: [Complaint]!
+    fetchAdminResponsesForMyComplaints: [AdminResponse]!
     adminResponse(id: Int!): AdminResponse
     fetchAdminResponsesByUser: [AdminResponse]!
     cars: [Car!]!
@@ -237,7 +240,7 @@ const shareCarInfo = async (car) => {
 
   deleteRequest(id: ID!): Boolean!
 updateMyUser(name: String , email: String , universityId: String , phoneNumber: String, isPhoneVerified: Boolean , isDriverApproved: Boolean , isStudentApproved: Boolean): User!
-createAdminResponse(userId: Int! , Subject: String! , Message: String!): AdminResponse!
+createAdminResponse(complaintId: Int! , Subject: String! , Message: String!): AdminResponse!
 deleteUser(id: ID!): Boolean!
 createComplaint(Subject: String! , Message: String!): Complaint!
 deleteComplaint(id: ID!): Complaint!
@@ -335,6 +338,80 @@ const resolvers = {
         throw new Error("Unauthorized");
       }
       return await prisma.complaint.findMany();
+    },
+    fetchUnrespondedComplaints: async (_ , __ , {req , res}) => {
+      if(!checkAuth(["admin"] , fetchRole(req.headers.cookie))) {
+        throw new Error("Unauthorized");
+      }
+      const complaints = await prisma.complaint.findMany();
+
+      const adminResponses = await prisma.adminResponse.findMany();
+
+      const adminResponsesComplaintIds = [];
+
+      const adminResponsesToReturn = [];
+
+      adminResponses.forEach(adminResponse => {
+        adminResponsesComplaintIds.push(adminResponses.universityId);
+      })
+
+      for(let i = 0 ; i < complaints.length ; i++)
+      {
+        if(!adminResponsesComplaintIds.includes(complaints[i].id))
+        {
+          adminResponsesToReturn.push(complaints[i]);
+        }
+      }
+
+      return adminResponsesToReturn;
+    },
+    fetchMyComplaints: async (_ , __ , {req , res}) => {
+      if(!checkAuth(["admin" , "driver", "student" , fetchRole(req.headers.cookie)]))
+      {
+        throw new Error("Unauthorized");
+      }
+      const userId = fetchId(req.headers.cookie);
+      const complaints = await prisma.complaints.findMany({
+        where:
+          {
+            universityId: userId.toString()
+          }
+      });
+
+      return complaints;
+    },
+    fetchAdminResponsesForMyComplaints: async (_ , __ , {req , res}) => {
+      if(!checkAuth(["admin" , "driver", "student" , fetchRole(req.headers.cookie)]))
+      {
+        throw new Error("Unauthorized");
+      }
+      const userId = fetchId(req.headers.cookie);
+      const complaints = await prisma.complaints.findMany({
+        where:
+          {
+            universityId: userId.toString()
+          }
+      });
+
+      const complaintIds = [];
+
+      complaints.forEach(complaint => {
+        complaintIds.push(complaint.id);
+      })
+
+      const adminResponses = await prisma.adminResponse.findMany();
+
+      const adminResponsesToReturn = [];
+
+      for(let i = 0 ; i < adminResponses.length ; i++)
+      {
+        if(!complaintIds.includes(adminResponses[i].complaintId))
+        {
+          adminResponsesToReturn.push(adminResponses[i]);
+        }
+      }
+
+      return adminResponsesToReturn;
     },
     complaint: async (_, { id }, { req , res }) => {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
@@ -684,7 +761,7 @@ const resolvers = {
       const userId = fetchId(req.headers.cookie);
       return await prisma.complaint.create({
         data: {
-          universityId : userId,
+          universityId : userId.toString(),
           Subject : args.Subject,
           Message : args.Message,
           createdAt : new Date()
