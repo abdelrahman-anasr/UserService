@@ -686,7 +686,7 @@ const resolvers = {
         userId : userId,
         Subject : args.Subject,
         Message : args.Message,
-        createdAt : new Date().toISOString()
+        createdAt : new Date()
       });
     },
     deleteComplaint: async (_, { id }, { req , res }) => {
