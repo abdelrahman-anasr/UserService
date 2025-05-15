@@ -639,6 +639,7 @@ const resolvers = {
       res.cookie('Authorization', token, {
         httpOnly: true,
         sameSite: 'None',
+        domain: 'railway.app',
         secure: true
       });
       return { token , role: user.role };
