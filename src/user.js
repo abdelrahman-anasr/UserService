@@ -366,7 +366,7 @@ const resolvers = {
       return adminResponsesToReturn;
     },
     fetchMyComplaints: async (_ , __ , {req , res}) => {
-      if(!checkAuth(["admin" , "driver", "student" , fetchRole(req.headers.cookie)]))
+      if(!checkAuth(["admin" , "driver", "student"] , fetchRole(req.headers.cookie)))
       {
         throw new Error("Unauthorized");
       }
@@ -381,7 +381,7 @@ const resolvers = {
       return complaints;
     },
     fetchAdminResponsesForMyComplaints: async (_ , __ , {req , res}) => {
-      if(!checkAuth(["admin" , "driver", "student" , fetchRole(req.headers.cookie)]))
+      if(!checkAuth(["admin" , "driver", "student"] , fetchRole(req.headers.cookie)))
       {
         throw new Error("Unauthorized");
       }
