@@ -61,6 +61,7 @@ dotenv.config();
   const app = express();
 
   const corsOptions = {
+    origin: 'https://giu-pooling-frontend-production.up.railway.app',
     credentials: true,
   };
   app.use(cors(corsOptions));
