@@ -139,6 +139,11 @@ const shareCarInfo = async (car) => {
     updatedAt: String
   }
 
+  type Miniusers {
+    universityId: String!
+    name: String!
+  }
+
   type AdminResponse {
     id: Int!
     userId: Int!
@@ -186,6 +191,7 @@ const shareCarInfo = async (car) => {
     complaintsByUser(userId: Int!): [Complaint!]!
     accountRequests: [AccountRequest]
     accountRequest(id: Int!): AccountRequest
+    Miniusers: [Miniusers!]!
     rejectAccountRequest(id: Int!): AccountRequest!
     adminResponses: [AdminResponse]!
     adminResponse(id: Int!): AdminResponse
@@ -317,6 +323,12 @@ const resolvers = {
       console.log("User is: " + JSON.stringify(user));
       return user;
     },
+    Miniusers: async (_, __, { req , res }) => {
+      if (!checkAuth(["admin" , "driver" , "student"], fetchRole(req.headers.cookie))) {
+        throw new Error("Unauthorized");
+      }
+      return await prisma.miniusers.findMany();
+    },
     complaints: async (_, __, { req , res }) => {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
@@ -403,7 +415,7 @@ const resolvers = {
       return accountRequest;
     },
     cars: async (_, __, { req , res }) => {
-      if (!checkAuth(['admin'], fetchRole(req.headers.cookie))) {
+      if (!checkAuth(['admin' , 'driver' , 'student'], fetchRole(req.headers.cookie))) {
         throw new Error('Unauthorized');
       }
       return await prisma.car.findMany();
@@ -594,6 +606,12 @@ const resolvers = {
       accountCode: accountCode
     }
   });
+      const miniuser = await prisma.miniusers.create({
+        data : {
+          universityId : user.universityId,
+          name : user.name
+        }
+      });
       await shareUserDetails(user);
       await new Promise(r => setTimeout(r, 2000));
       await sendAccountCreationNotification(user);

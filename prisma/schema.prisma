@@ -37,6 +37,11 @@ model AccountRequest {
 
 }
 
+model Miniusers {
+  universityId Int @id
+  name String
+}
+
 model Request {
   id           String        @id @default(uuid())
   universityId String
