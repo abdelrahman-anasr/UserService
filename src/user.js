@@ -304,6 +304,7 @@ const resolvers = {
       return await prisma.user.findUnique({ where: { id } });
     },
     fetchMyDetails: async (_, __, { req , res }) => {
+      console.log("Request Cookies is: " + JSON.stringify(req.headers.cookie));
       console.log("Request Cookies is: " + JSON.stringify(req.headers.cookie)); 
       
       if (!checkAuth(["admin" , "driver" , "student"], fetchRole(req.headers.cookie)))

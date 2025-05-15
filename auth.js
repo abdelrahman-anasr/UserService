@@ -2,7 +2,6 @@ import * as cookie from "cookie";
 import jwt from "jsonwebtoken";
 
 export function fetchRole(headerCookies) {
-    console.log("Header cookies are: " + headerCookies);
     if (headerCookies === undefined) {
         return "Unauthorized";
     }
@@ -18,7 +17,6 @@ export function fetchRole(headerCookies) {
 }
 
 export function fetchId(headerCookies) {
-    console.log("Header cookies are: " + headerCookies);
     if (headerCookies === undefined) {
         return "Unauthorized";
     }
@@ -31,7 +29,6 @@ export function fetchId(headerCookies) {
 }
 
 export function checkAuth(rolesAuthorized, rolePassed) {
-    console.log("Header cookies are: " + headerCookies);
     if (rolesAuthorized.includes(rolePassed))
         return true;
     return false;
