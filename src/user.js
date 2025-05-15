@@ -154,7 +154,7 @@ const shareCarInfo = async (car) => {
 
   type Complaint {
     id: Int!
-    userId: String!
+    universityId: String!
     Subject: String!
     Message: String!
     createdAt: String!
