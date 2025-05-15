@@ -37,11 +37,6 @@ model AccountRequest {
 
 }
 
-model Miniusers {
-  universityId Int @id
-  name String
-}
-
 model Request {
   id           String        @id @default(uuid())
   universityId String
@@ -57,7 +52,7 @@ model Request {
 
 model Complaint {
   id Int @id @default(autoincrement())
-  userId Int
+  universityId String
   Subject String
   Message String
   createdAt DateTime @default(now())
@@ -65,10 +60,15 @@ model Complaint {
 
 model AdminResponse {
   id Int @id @default(autoincrement())
-  userId Int
+  complaintId Int
   Subject String
   Message String
   createdAt DateTime @default(now())
+}
+
+model Miniusers {
+  universityId Int @id
+  name String
 }
 
 model Car {
