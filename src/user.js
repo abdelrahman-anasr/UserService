@@ -683,7 +683,7 @@ const resolvers = {
       }
       const userId = fetchId(req.headers.cookie);
       return await prisma.complaint.create({
-        userId : userId,
+        universityId : userId,
         Subject : args.Subject,
         Message : args.Message,
         createdAt : new Date()
