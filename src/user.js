@@ -371,7 +371,7 @@ const resolvers = {
         throw new Error("Unauthorized");
       }
       const userId = fetchId(req.headers.cookie);
-      const complaints = await prisma.complaints.findMany({
+      const complaints = await prisma.complaint.findMany({
         where:
           {
             universityId: userId.toString()
@@ -386,7 +386,7 @@ const resolvers = {
         throw new Error("Unauthorized");
       }
       const userId = fetchId(req.headers.cookie);
-      const complaints = await prisma.complaints.findMany({
+      const complaints = await prisma.complaint.findMany({
         where:
           {
             universityId: userId.toString()
@@ -550,7 +550,7 @@ const resolvers = {
       }
       return await prisma.adminResponse.create({
         data : {
-          userId : args.userId,
+          complaintId : args.complaintId,
           Subject : args.Subject,
           Message : args.Message,
           createdAt : new Date().toISOString()
