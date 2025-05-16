@@ -305,10 +305,12 @@ const resolvers = {
   //find users
   Query: {
     users: async (_, __, { req , res }) => {
-      if (!checkAuth(["admin"], fetchRole(req))) {
+      if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
-      return await prisma.user.findMany();
+      const users = await prisma.user.findMany();
+      console.log("Returning: " + JSON.stringify(users));
+      return await users;
     },
     //find user by id
     user: async (_, { id }, { req , res }) => {
