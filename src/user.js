@@ -59,6 +59,17 @@ const {typeDefs , resolvers} = await (async function() {
     await producer.disconnect();
   };
 
+  const sendAdminRespondedNotification = async (user) => {
+    await producer.connect();
+    await producer.send({
+      topic: "notificationRequests",
+      messages: [{
+        key: user.universityId.toString(),
+        value: JSON.stringify({request: "Admin Response" , subject : "An Admin Response has responded to your Complaint" , message : "Please login to your account to view the response" , userId : user.universityId})  
+      }]
+    });
+   }
+
   const sendAccountCreationNotification = async (user) => {
     await producer.connect();
     await producer.send({
@@ -548,7 +559,7 @@ const resolvers = {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
-      return await prisma.adminResponse.create({
+      const adminResponse = await prisma.adminResponse.create({
         data : {
           complaintId : args.complaintId,
           Subject : args.Subject,
@@ -556,6 +567,23 @@ const resolvers = {
           createdAt : new Date().toISOString()
         }
       });
+
+      const complaint = await prisma.complaint.findUnique({
+        where: {
+          id : args.complaintId
+        }
+      });
+
+      const user = await prisma.user.findUnique({
+        where: {
+          universityId : complaint.universityId
+        }
+      });
+
+      await sendAdminRespondedNotification(user);
+
+      return adminResponse;
+
     },
     //create user
     createUser: async (_, args, { req , res }) => {
