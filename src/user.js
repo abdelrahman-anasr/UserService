@@ -714,9 +714,10 @@ const resolvers = {
       accountCode: accountCode
     }
   });
+    const numberId = Number(user.universityId); 
       const miniuser = await prisma.miniusers.create({
         data : {
-          universityId : user.universityId,
+          universityId : numberId,
           name : user.name
         }
       });
