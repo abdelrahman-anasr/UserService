@@ -242,7 +242,7 @@ const shareCarInfo = async (car) => {
   ): User!
 
 
-  createRequest( universityId: String! ,file: Upload ): Request!
+  createRequest( universityId: String! ,file: Upload , carModel: String! , carModelYear: String! , seats: Int! ): Request!
 
   updateRequest( id: ID! ,status: RequestStatus ,reviewedAt: String): Request!
 
