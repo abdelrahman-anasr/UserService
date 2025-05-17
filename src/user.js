@@ -239,7 +239,6 @@ const shareCarInfo = async (car) => {
     phoneNumber: String
     role: Role
     isEmailVerified: Boolean
-    isPhoneVerified: Boolean
     isDriverApproved: Boolean
     isStudentApproved: Boolean
   ): User!
