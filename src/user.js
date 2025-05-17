@@ -230,7 +230,7 @@ const shareCarInfo = async (car) => {
       role: Role
     ): User!
     login(email: String!, password: String!): LoginResponse!
-    verifyAccount(code: Int!): String!
+    verifyAccount(code: Int!): User!
     updateUser(
     id: ID!
     name: String
@@ -939,11 +939,11 @@ const resolvers = {
       throw new Error("User not found");
 
     if(user.isEmailVerified)
-      return "Already Verified";
+      throw new Error("User already verified");
 
 
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: {
         universityId: approval.userId
       },
@@ -951,7 +951,8 @@ const resolvers = {
         isEmailVerified : true
       }
     });
-    return "Updated";
+
+    return updatedUser;
   },
 
   deleteRequest: async (_, { id }, { req , res }) => {
