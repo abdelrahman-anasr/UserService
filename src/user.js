@@ -417,7 +417,7 @@ const resolvers = {
 
       for(let i = 0 ; i < adminResponses.length ; i++)
       {
-        if(!complaintIds.includes(adminResponses[i].complaintId))
+        if(complaintIds.includes(adminResponses[i].complaintId))
         {
           adminResponsesToReturn.push(adminResponses[i]);
         }
