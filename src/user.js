@@ -644,7 +644,7 @@ const resolvers = {
       sendAccountCreationNotification(user);
       return user;
     },
-    updateMyUser: async (_, args, { req , res }) => {
+    updateMyUser: async (_, {data}, { req , res }) => {
       if (!checkAuth(["admin" , "driver" , "student"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
@@ -655,11 +655,7 @@ const resolvers = {
         where: {
           universityId : userId.toString()
         },
-        data : {
-          name : args.name,
-          email : args.email,
-          phoneNumber : args.phoneNumber,
-        }
+        data
       });
 
       return user;
@@ -916,6 +912,7 @@ const resolvers = {
       throw new Error("Unauthorized");
     else
     {
+      console.log("Entered create request");
               // Destructure file and other arguments
       const { file, ...restData } = args;
 
@@ -924,10 +921,13 @@ const resolvers = {
         status: 'PENDING',
       };
 
+      console.log("Entering save file");
       // If a file is uploaded, process and store the file URL
       if (file) {
         updateData.licenseURL = await saveUploadedFile(file);
       }
+
+      console.log("Going to create")
 
       // Create the request in the database
       return await prisma.request.create({
