@@ -803,9 +803,10 @@ const resolvers = {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
+      const numberId = Number(id);
       const complaint = await prisma.complaint.findUnique({
         where: {
-          id : id
+          id : numberId
         }
       });
       if(complaint === null)
