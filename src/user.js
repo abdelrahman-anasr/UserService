@@ -813,7 +813,7 @@ const resolvers = {
         throw new Error("Complaint not found");
       await prisma.complaint.delete({
         where: {
-          id : id
+          id : numberId
         }
       });
       return complaint;
