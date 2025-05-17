@@ -644,7 +644,7 @@ const resolvers = {
       sendAccountCreationNotification(user);
       return user;
     },
-    updateMyUser: async (_, {argsData}, { req , res }) => {
+    updateMyUser: async (_, args, { req , res }) => {
       if (!checkAuth(["admin" , "driver" , "student"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
@@ -655,7 +655,9 @@ const resolvers = {
         where: {
           universityId : userId.toString()
         },
-        data : argsData
+        data : {
+          ...args
+        }
       });
 
       return user;
