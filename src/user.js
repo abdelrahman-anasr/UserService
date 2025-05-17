@@ -205,6 +205,7 @@ const shareCarInfo = async (car) => {
     accountRequests: [AccountRequest]
     accountRequest(id: Int!): AccountRequest
     Miniusers: [Miniusers!]!
+    verifyAccount(code: Int!): User!
     rejectAccountRequest(id: Int!): AccountRequest!
     adminResponses: [AdminResponse]!
     fetchMyComplaints: [Complaint]!
@@ -230,7 +231,6 @@ const shareCarInfo = async (car) => {
       role: Role
     ): User!
     login(email: String!, password: String!): LoginResponse!
-    verifyAccount(code: Int!): User!
     updateUser(
     id: ID!
     name: String
@@ -490,6 +490,44 @@ const resolvers = {
           userId : id
         }
       });
+    },
+    verifyAccount: async (_, { code }, { req , res }) => {
+      if (!checkAuth(['admin'], fetchRole(req.headers.cookie))) {
+        throw new Error('Unauthorized');
+      }
+      const approval = await prisma.approval.findFirst({
+        where: {
+          accountCode: code
+        }
+      });
+
+      if(approval === null || approval === undefined)
+        throw new Error("Wrong Code");
+
+      const user = await prisma.user.findFirst({
+        where: {
+          universityId: approval.userId
+        }
+      });
+
+      if(user === null)
+        throw new Error("User not found");
+
+      if(user.isEmailVerified)
+        throw new Error("User already verified");
+
+
+
+      const updatedUser = await prisma.user.update({
+        where: {
+          universityId: approval.userId
+        },
+        data : {
+          isEmailVerified : true
+        }
+      });
+
+      return updatedUser;
     },
     accountRequests: async (_, args, { req , res }) => {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
@@ -919,44 +957,7 @@ const resolvers = {
       throw new Error('Failed to update request');
     }
   },
-  verifyAccount: async (_, { code }, { req , res }) => {
-    if (!checkAuth(['admin'], fetchRole(req.headers.cookie))) {
-      throw new Error('Unauthorized');
-    }
-    const approval = await prisma.approva.findFirst({
-      where: {
-        accountCode: code
-      }
-    });
 
-    if(approval === null || approval === undefined)
-      throw new Error("Wrong Code");
-
-    const user = await prisma.user.findFirst({
-      where: {
-        universityId: approval.userId
-      }
-    });
-
-    if(user === null)
-      throw new Error("User not found");
-
-    if(user.isEmailVerified)
-      throw new Error("User already verified");
-
-
-
-    const updatedUser = await prisma.user.update({
-      where: {
-        universityId: approval.userId
-      },
-      data : {
-        isEmailVerified : true
-      }
-    });
-
-    return updatedUser;
-  },
 
   deleteRequest: async (_, { id }, { req , res }) => {
     if (!checkAuth(['admin'], fetchRole(req.headers.cookie))) {
