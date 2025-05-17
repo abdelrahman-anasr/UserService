@@ -70,13 +70,14 @@ const {typeDefs , resolvers} = await (async function() {
     });
    }
 
-  const sendAccountCreationNotification = async (user) => {
+  const sendAccountCreationNotification = async (user , approvalCode) => {
+    const url = "https://giu-pooling-frontend-production.up.railway.app/verify-account?code=" + approvalCode;
     await producer.connect();
     await producer.send({
       topic: "notificationRequests",
       messages: [{
         key: user.universityId.toString(),
-        value: JSON.stringify({request: "Account Creation" , subject : "Account Creation" , message : "Your account has been created . Please Follow the Following Link to verify: {Placeholder Link}" , userId : user.universityId})
+        value: JSON.stringify({request: "Account Creation" , subject : "Account Creation" , message : "Your account has been created . Please Follow the Following Link to verify: " + url , userId : user.universityId})
       }]
     });
     console.log("Sent!");
@@ -229,6 +230,7 @@ const shareCarInfo = async (car) => {
       role: Role
     ): User!
     login(email: String!, password: String!): LoginResponse!
+    verifyAccount(code: Int!): String!
     updateUser(
     id: ID!
     name: String
@@ -708,9 +710,9 @@ const resolvers = {
     if (!exists) unique = true;
   }
 
-  await prisma.approval.create({
+  const approval = await prisma.approval.create({
     data: {
-      userId: user.id,
+      userId: user.universityId,
       accountCode: accountCode
     }
   });
@@ -723,7 +725,7 @@ const resolvers = {
       });
       await shareUserDetails(user);
       await new Promise(r => setTimeout(r, 2000));
-      await sendAccountCreationNotification(user);
+      await sendAccountCreationNotification(user , accountCode);
       await shareUserGenderDetails(user);
       return user;
     },
@@ -917,6 +919,40 @@ const resolvers = {
       console.error('Update failed:', error);
       throw new Error('Failed to update request');
     }
+  },
+  verifyAccount: async (_, { code }, { req , res }) => {
+    if (!checkAuth(['admin'], fetchRole(req.headers.cookie))) {
+      throw new Error('Unauthorized');
+    }
+    const approval = await prisma.approva.findFirst({
+      where: {
+        accountCode: code
+      }
+    });
+
+    const user = await prisma.user.findFirst({
+      where: {
+        universityId: approval.userId
+      }
+    });
+
+    if(user === null)
+      throw new Error("User not found");
+
+    if(user.isEmailVerified)
+      return "Already Verified";
+
+
+
+    await prisma.user.update({
+      where: {
+        universityId: approval.userId
+      },
+      data : {
+        isEmailVerified : true
+      }
+    });
+    return "Updated";
   },
 
   deleteRequest: async (_, { id }, { req , res }) => {
