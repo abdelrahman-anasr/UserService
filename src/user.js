@@ -239,8 +239,6 @@ const shareCarInfo = async (car) => {
     phoneNumber: String
     role: Role
     isEmailVerified: Boolean
-    isDriverApproved: Boolean
-    isStudentApproved: Boolean
   ): User!
 
 
@@ -251,7 +249,7 @@ const shareCarInfo = async (car) => {
   acceptRequest(id: ID!): Car!
 
   deleteRequest(id: ID!): Boolean!
-updateMyUser(name: String , email: String , universityId: String , phoneNumber: String, isPhoneVerified: Boolean , isDriverApproved: Boolean , isStudentApproved: Boolean): User!
+updateMyUser(name: String , email: String , phoneNumber: String): User!
 createAdminResponse(complaintId: Int! , Subject: String! , Message: String!): AdminResponse!
 deleteUser(id: ID!): Boolean!
 createComplaint(Subject: String! , Message: String!): Complaint!
@@ -647,31 +645,26 @@ const resolvers = {
       return user;
     },
     updateMyUser: async (_, args, { req , res }) => {
-      if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
+      if (!checkAuth(["admin" , "driver" , "student"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
-      
-      const user = await prisma.user.findFirst({
+
+      const userId = fetchId(req.headers.cookie);
+
+      const user = await prisma.user.update({
         where: {
-          universityId : fetchId(req.headers.cookie)
-        }
-      });
-      if(user === null)
-        throw new Error("User not found");
-      const updatedUser = await prisma.user.update({
-        where: {
-          universityId : fetchId(req.headers.cookie)
+          universityId : userId.toString()
         },
         data : {
           name : args.name,
           email : args.email,
-          universityId : args.universityId,
-          gender : args.gender,
           phoneNumber : args.phoneNumber,
-          isEmailVerified : args.isEmailVerified,
         }
       });
-      return updatedUser;
+
+      return user;
+
+      
     },
     createAccountRequest: async (_, args, { req , res }) => {
       const requestsWithSameUniversityId = await prisma.accountRequest.findMany({
