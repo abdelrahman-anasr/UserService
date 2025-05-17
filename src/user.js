@@ -929,6 +929,9 @@ const resolvers = {
       }
     });
 
+    if(approval === null || approval === undefined)
+      throw new Error("Wrong Code");
+
     const user = await prisma.user.findFirst({
       where: {
         universityId: approval.userId
