@@ -466,14 +466,14 @@ const resolvers = {
       });
       if(accountRequest === null)
         throw new Error("Account request not found");
-      if(accountRequest.status !== "Pending")
+      if(accountRequest.status !== "PENDING")
         throw new Error("Account request is not pending");
       const updatedRequest = await prisma.accountRequest.update({
         where: {
           id : id
         },
         data : {
-          status : "Rejected"
+          status : "REJECTED"
         }
       });
       return updatedRequest;
@@ -531,7 +531,11 @@ const resolvers = {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
         throw new Error("Unauthorized");
       }
-      return await prisma.accountRequest.findMany();
+      return await prisma.accountRequest.findMany({
+        where: {
+          status: "PENDING"
+        }
+      });
     },
     accountRequest: async (_, { id }, { req , res }) => {
       if (!checkAuth(["admin"], fetchRole(req.headers.cookie))) {
@@ -686,7 +690,7 @@ const resolvers = {
           gender : args.gender,
           phoneNumber : args.phoneNumber,
           password : hashedPassword,
-          status : "Pending",
+          status : "PENDING",
           createdAt : new Date().toISOString()
         }
       });
@@ -702,14 +706,14 @@ const resolvers = {
       });
       if(accountRequest === null)
         throw new Error("Account request not found");
-      if(accountRequest.status === "Approved")
+      if(accountRequest.status === "APPROVED")
         throw new Error("Account request is already approved");
       await prisma.accountRequest.update({
         where: {
           id : id
         },
         data : {
-          status : "Approved"
+          status : "APPROVED"
         }
       });
       const user =  await prisma.user.create({
