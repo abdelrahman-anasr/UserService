@@ -1,5 +1,5 @@
 import { gql } from 'apollo-server-express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, RequestStatus } from '@prisma/client';
 const prisma = new PrismaClient();
 import { fetchRole, fetchId, checkAuth }from '../auth.js';
 import bcrypt from 'bcryptjs';
@@ -579,14 +579,14 @@ const resolvers = {
         });
         if(request === null)
           throw new Error("Request not found");
-        if(request.status === "ACCEPTED" || request.status === "REJECTED")
+        if(request.status === RequestStatus.APPROVED || request.status === RequestStatus.REJECTED)
           throw new Error("Request is already approved");
         const updatedRequest = await prisma.request.update({
           where: {
             id : id
           },
           data : {
-            status : "REJECTED"
+            status : RequestStatus.REJECTED
           }
         });
         return updatedRequest;
@@ -876,14 +876,14 @@ const resolvers = {
       });
       if(request === null)
         throw new Error("Request not found");
-      if(request.status === "ACCEPTED" || request.status === "REJECTED")
+      if(request.status === RequestStatus.APPROVED || request.status === RequestStatus.REJECTED)
         throw new Error("Request is already approved");
       const updatedRequest = await prisma.request.update({
         where: {
           id : id
         },
         data : {
-          status : "ACCEPTED"
+          status : RequestStatus.APPROVED
         }
       });
 
